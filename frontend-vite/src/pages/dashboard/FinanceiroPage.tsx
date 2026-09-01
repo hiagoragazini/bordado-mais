@@ -49,7 +49,7 @@ export default function FinanceiroPage() {
         if (user) {
             fetchFinancialData();
         }
-    }, [user]);
+    }, [user, filter]);
 
     const fetchFinancialData = async () => {
         const now = new Date();
@@ -84,38 +84,69 @@ export default function FinanceiroPage() {
         setMonthlyReceitas(rec);
         setMonthlyDespesas(des);
 
-        // 3. Agregação p/ Gráfico (Últimos 12 meses)
-        const { data: allYearTx } = await supabase
-            .from('financial_transactions')
-            .select('amount, type, transaction_date')
-            .eq('user_id', user?.id)
-            .gte('transaction_date', startOfYear);
+        // 3. Agregação p/ Gráfico — varia conforme o toggle Mês/Ano
+        if (filter === 'mes') {
+            // Dia a dia do mês atual
+            const { data: monthTx } = await supabase
+                .from('financial_transactions')
+                .select('amount, type, transaction_date')
+                .eq('user_id', user?.id)
+                .gte('transaction_date', startOfMonth);
 
-        const monthsMap: Record<string, number> = {};
-        for (let i = 11; i >= 0; i--) {
-            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            const label = d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
-            monthsMap[label] = 0; // init 0
-        }
+            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const daysMap: Record<string, number> = {};
+            for (let d = 1; d <= daysInMonth; d++) {
+                daysMap[String(d)] = 0; // init 0
+            }
 
-        if (allYearTx) {
-            allYearTx.forEach(tx => {
-                const date = new Date(tx.transaction_date + 'T12:00:00Z');
-                const label = date.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
-                if (monthsMap[label] !== undefined) {
-                    // Somamos no gráfico a Receita? Ou Lucro? O Mock chama de "Fluxo". Fluxo = Entradas. Vamos pôr Receitas
-                    if (tx.type === 'receita') {
-                        monthsMap[label] += Number(tx.amount);
+            if (monthTx) {
+                monthTx.forEach(tx => {
+                    const date = new Date(tx.transaction_date + 'T12:00:00Z');
+                    const day = String(date.getDate());
+                    if (daysMap[day] !== undefined && tx.type === 'receita') {
+                        daysMap[day] += Number(tx.amount);
                     }
-                }
-            });
-        }
+                });
+            }
 
-        const buildChart = Object.keys(monthsMap).map(k => ({
-            name: k.charAt(0).toUpperCase() + k.slice(1),
-            value: monthsMap[k]
-        }));
-        setChartData(buildChart);
+            const buildChart = Object.keys(daysMap)
+                .sort((a, b) => Number(a) - Number(b))
+                .map(k => ({ name: k, value: daysMap[k] }));
+            setChartData(buildChart);
+        } else {
+            // Últimos 12 meses
+            const { data: allYearTx } = await supabase
+                .from('financial_transactions')
+                .select('amount, type, transaction_date')
+                .eq('user_id', user?.id)
+                .gte('transaction_date', startOfYear);
+
+            const monthsMap: Record<string, number> = {};
+            for (let i = 11; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const label = d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
+                monthsMap[label] = 0; // init 0
+            }
+
+            if (allYearTx) {
+                allYearTx.forEach(tx => {
+                    const date = new Date(tx.transaction_date + 'T12:00:00Z');
+                    const label = date.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
+                    if (monthsMap[label] !== undefined) {
+                        // Somamos no gráfico a Receita? Ou Lucro? O Mock chama de "Fluxo". Fluxo = Entradas. Vamos pôr Receitas
+                        if (tx.type === 'receita') {
+                            monthsMap[label] += Number(tx.amount);
+                        }
+                    }
+                });
+            }
+
+            const buildChart = Object.keys(monthsMap).map(k => ({
+                name: k.charAt(0).toUpperCase() + k.slice(1),
+                value: monthsMap[k]
+            }));
+            setChartData(buildChart);
+        }
     };
 
     const fetchFilteredTransactions = async () => {
@@ -211,7 +242,7 @@ export default function FinanceiroPage() {
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-surface rounded-3xl p-6 sm:p-8 border border-border-light shadow-sm">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="font-display text-2xl text-text">Fluxo Anual</h2>
+                            <h2 className="font-display text-2xl text-text">{filter === 'mes' ? 'Fluxo do Mês' : 'Fluxo Anual'}</h2>
                             <Tabs value={filter} onValueChange={setFilter}>
                                 <TabsList className="bg-surface-warm">
                                     <TabsTrigger value="mes" className="rounded-lg">Mês</TabsTrigger>

@@ -528,7 +528,7 @@ export default function OrcamentosPage() {
         if (!orcamentoParaEnviar) return;
         const orc = orcamentoParaEnviar;
         const numero = orc.cliente_contato?.replace(/\D/g, '');
-        const baseUrl = import.meta.env.VITE_APP_URL || 'http://localhost:5173';
+        const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
         const linkOrcamento = `${baseUrl}/orcamento/${orc.token_publico}`;
 
         const texto = encodeURIComponent(
@@ -589,6 +589,9 @@ export default function OrcamentosPage() {
             .upload(path, arquivo, { upsert: true });
 
         if (uploadError) {
+            // Fecha o modal custom (z-index 9999) antes do alerta, senão o alerta
+            // renderiza atrás dele e fica invisível — parece que "nada acontece".
+            setShowNovaArte(false);
             showAlert('Erro', 'Erro ao enviar arquivo para o storage.');
             console.error(uploadError);
             setUploadingArte(false);
@@ -620,13 +623,15 @@ export default function OrcamentosPage() {
             showAlert('Sucesso', 'Arte enviada para aprovação!');
         } else {
             console.error(error);
+            setShowNovaArte(false);
             showAlert('Erro', 'Erro ao salvar o registro da arte no banco.');
         }
         setUploadingArte(false);
     };
 
     const handleEnviarArteWhatsApp = (arte: any) => {
-        const link = `${import.meta.env.VITE_APP_URL}/aprovar-arte/${arte.token_publico}`;
+        const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+        const link = `${baseUrl}/aprovar-arte/${arte.token_publico}`;
         const numero = arte.orcamentos?.cliente_contato?.replace(/\D/g, '');
         const texto = encodeURIComponent(
             `Ola ${arte.orcamentos?.cliente_nome}!\n\n` +
@@ -816,8 +821,9 @@ export default function OrcamentosPage() {
                                     <div style={{ display: 'flex', gap: '8px', width: '100%', justifyContent: 'flex-start' }} className="sm:w-auto sm:justify-end">
                                         <button
                                             onClick={() => {
+                                                const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
                                                 navigator.clipboard.writeText(
-                                                    `${import.meta.env.VITE_APP_URL}/aprovar-arte/${arte.token_publico}`
+                                                    `${baseUrl}/aprovar-arte/${arte.token_publico}`
                                                 );
                                                 showAlert('Sucesso', 'Link copiado para a área de transferência!');
                                             }}
@@ -1184,7 +1190,7 @@ export default function OrcamentosPage() {
                         {/* Botão copiar link também */}
                         <button
                             onClick={() => {
-                                const baseUrl = import.meta.env.VITE_APP_URL || 'http://localhost:5173';
+                                const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
                                 navigator.clipboard.writeText(`${baseUrl}/orcamento/${orcamentoParaEnviar?.token_publico}`);
                                 showAlert('Sucesso', 'Link copiado para a área de transferência!');
                             }}

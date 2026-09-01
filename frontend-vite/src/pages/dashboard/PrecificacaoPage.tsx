@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calculator, Sparkles, AlertCircle, Clock, ChevronRight, Timer, Play } from 'lucide-react';
+import { Calculator, AlertCircle, Clock, Timer, Play } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -16,9 +16,6 @@ export default function PrecificacaoPage() {
     const [horasTrabalho, setHorasTrabalho] = useState('');
     const [valorHora, setValorHora] = useState('');
     const [margemLucro, setMargemLucro] = useState('');
-
-    const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
 
     const totalCalculado =
         (Number(custoMaterial) || 0) +
@@ -45,15 +42,6 @@ export default function PrecificacaoPage() {
     const applyLoggedTime = () => {
         const hoursRounded = (totalMinutesLogged / 60).toFixed(1);
         setHorasTrabalho(hoursRounded);
-    };
-
-    const handleAnalyzeAI = () => {
-        setIsLoading(true);
-        setAiAnalysis(null);
-        setTimeout(() => {
-            setIsLoading(false);
-            setAiAnalysis(`A Suelem recomenda: Este valor de **R$ ${totalCalculado.toFixed(2)}** parece justo para um bordado de ${horasTrabalho} horas se considerarmos materiais premium. No entanto, sua margem de ${margemLucro}% pode limitar vendas para o mercado C. Experimente criar um segundo produto similar, com fios comuns, e reduzir a margem para 30% em kits promocionais.`);
-        }, 3000);
     };
 
     return (
@@ -181,42 +169,6 @@ export default function PrecificacaoPage() {
                             </div>
                         </div>
                     </motion.div>
-
-                    {/* AI Advisor Block */}
-                    <div className="bg-surface-warm rounded-3xl p-6 border border-border-light relative overflow-hidden group">
-                        <h3 className="font-display text-xl text-text mb-4 flex items-center gap-2">
-                            Suelem, a Consultora de Preços <Sparkles className="w-4 h-4 text-accent animate-pulse" />
-                        </h3>
-
-                        <AnimatePresence mode="wait">
-                            {!aiAnalysis && !isLoading && (
-                                <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                                    <p className="font-ui text-sm text-text-light mb-6">A IA cruza seus dados de custo com padrões de concorrência orgânica para dizer se esse preço perfomará no ateliê atual.</p>
-                                    <Button
-                                        onClick={handleAnalyzeAI}
-                                        className="w-full bg-accent hover:bg-accent-light text-white font-ui h-12 rounded-xl"
-                                    >
-                                        Analisar viabilidade do Preço
-                                    </Button>
-                                </motion.div>
-                            )}
-
-                            {isLoading && (
-                                <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex justify-center p-8">
-                                    <Calculator className="w-8 h-8 text-accent animate-bounce" />
-                                </motion.div>
-                            )}
-
-                            {aiAnalysis && !isLoading && (
-                                <motion.div key="analysis" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-6 shadow-sm border border-border/50 text-sm font-ui text-text-light leading-relaxed">
-                                    <div dangerouslySetInnerHTML={{ __html: aiAnalysis.replace(/\*\*(.*?)\*\*/g, '<b class="text-text">$1</b>') }} />
-                                    <Button variant="link" onClick={() => setAiAnalysis(null)} className="p-0 text-primary hover:text-primary-dark mt-4">
-                                        Fazer nova análise <ChevronRight className="w-4 h-4 ml-1" />
-                                    </Button>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
                 </div>
             </div>
         </div>

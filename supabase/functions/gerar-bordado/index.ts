@@ -65,7 +65,9 @@ Deno.serve(async (req) => {
         let promptUsed = '';
         let apiEndpoint = '';
         if (tipo === 'risco') {
-            apiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${GEMINI_API_KEY}`;
+            // gemini-2.5-flash-image estava retornando 503 "high demand" com frequência.
+            // Substituto oficial da Google antes do desligamento (02/10/2026): gemini-3.1-flash-image-preview.
+            apiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=${GEMINI_API_KEY}`;
         } else if (tipo === 'bordado_colorido') {
             apiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=${GEMINI_API_KEY}`;
         }
@@ -236,7 +238,7 @@ ${formData.referenceImageBase64 ? `REFERENCE IMAGE USAGE: Use only as visual sty
 DESIGN DESCRIPTION (follow strictly, do not add elements not mentioned):
 ${formData.descricao}
 
-${formData.nomeTexto ? `CRITICAL TEXT: Include EXACTLY this text: "${formData.nomeTexto}" — spelled ${formData.nomeTexto.split('').join('-')}. Zero changes, zero autocorrect.` : ''}
+${formData.nomeTexto ? `SPACE RESERVATION: The client wants to add the text "${formData.nomeTexto}" to this piece by hand/digitally AFTER printing — image AI cannot render legible text reliably, so do NOT draw any letters, numbers or words yourself. Instead, leave a clean, empty, uncluttered area (proportional to the length of that text) in a sensible spot in the composition — e.g. below the main illustration or in open space — where that text will be added later.` : ''}
 
 ${formData.ocasiao ? `Occasion context: ${formData.ocasiao}.` : ''}
 
@@ -249,7 +251,7 @@ Style:
 - NO photorealism, NO fabric texture, NO thread texture
 - Clean solid fills, no shadows, no gradients
 - White or cream background
-- Text in elegant cursive font if requested
+- NO text, NO letters, NO words, NO names, NO numbers anywhere in the image — image AI cannot render legible text reliably, so never attempt it. If a name was requested, leave clean empty space where it would go; it gets added by hand/digitally after printing.
 - ONLY include elements explicitly mentioned in the design description
 - Do NOT add flowers, roses or botanical elements unless the client specifically requested them
 - Do NOT add any text caption, label or description outside the design

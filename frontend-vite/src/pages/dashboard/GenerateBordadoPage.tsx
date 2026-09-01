@@ -400,7 +400,7 @@ export default function BordadoColoridoPage() {
                             <div className="space-y-8">
                                 <div>
                                     <label className="flex items-center gap-2 font-ui font-semibold text-text mb-3">
-                                        <Type className="w-5 h-5 text-primary" /> Texto para incluir no bordado (opcional)
+                                        <Type className="w-5 h-5 text-primary" /> Nome/texto (opcional)
                                     </label>
                                     <Input
                                         value={nomeTexto}
@@ -409,6 +409,9 @@ export default function BordadoColoridoPage() {
                                         maxLength={50}
                                         className="h-12 rounded-xl text-base bg-surface-warm focus-visible:ring-primary shadow-inner font-ui"
                                     />
+                                    <p className="text-xs text-text-light font-ui mt-2">
+                                        A IA não escreve texto com precisão — vamos reservar um espaço limpo no desenho pra você adicionar esse nome à mão ou digitalmente depois de imprimir.
+                                    </p>
                                 </div>
 
                                 <div>

@@ -212,7 +212,9 @@ TAMANHO E FORMATAÇÃO:
         };
 
         console.log(`Chamando chat Gemini para conv. ID: ${activeConversationId}...`);
-        const apiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        // gemini-2.5-flash foi descontinuado pela Google (HTTP 404 "model no longer available").
+        // Substituto oficial indicado pela própria API: gemini-3.6-flash.
+        const apiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
 
         const response = await fetch(apiEndpoint, {
             method: 'POST',
